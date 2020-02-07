@@ -1,0 +1,63 @@
+﻿@{
+    ViewBag.Title = "List of customers";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Customers</h2>
+<a class="btn btn-primary btn-margin-bottom" href="@Request.Url.ToString()/Create">Add Customer</a>
+
+<table id="customers" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Membership Type</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            var table = $("#customers").DataTable({
+                ajax: {
+                    url: "/api/customers",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        data: "name",
+                        render: function (data, type, customer) {
+                            return "<a href='/customers/edit/" + customer.id + "'>" + customer.name + "</a>";
+                        }
+                    },
+                    {
+                        data: "membershipType.name"
+                    },
+                    {
+                        data: "id",
+                        render: function (data) {
+                            return "<button class='btn-link js-delete' data-customer-id=" + data + ">Delete</button>";
+                        }
+                    }
+                ]
+            });
+
+            $("#customers").on("click", ".js-delete", function () {
+                var button = $(this);
+                if (confirm("Are you sure you want to delete this customer?")) {
+                    $.ajax({
+                        url: "/api/customers/" + $(button).attr("data-customer-id"),
+                        method: "DELETE",
+                        success: function () {
+                            table.row(button.parents("tr")).remove().draw();
+                        }
+                    });
+
+                }
+            });
+        });
+    </script>
+}
